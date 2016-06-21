@@ -1,9 +1,10 @@
 var express = require('express');
 var app = express();
 var swig = require('swig');
-var routes = require('./routes/');
+var wikiRouter = require('./routes/wiki');
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
+var models = require('./models/');
 
 // templating boilerplate setup
 app.engine('html', swig.renderFile); // how to render html templates
@@ -20,8 +21,18 @@ app.use(bodyParser.json()); // would be for AJAX requests
 
 app.use(express.static('public'));
 
-app.use('/', routes);
+app.use('/wiki', wikiRouter);
 
-app.listen(3000, function() {
-  console.log("listening");
+app.get('/', function(req, res) {
+  res.render('index');
+});
+
+models.User.sync({})
+.then(function() {
+  return models.Page.sync({});
+})
+.then(function() {
+  app.listen(3000, function() {
+    console.log("listening");
+  });
 });
