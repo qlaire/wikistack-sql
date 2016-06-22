@@ -22,6 +22,7 @@ router.post('/', function(req, res, next) {
       title: formContent.title,
       content: formContent.content,
       status : formContent.status,
+      tags: formContent.tags
     });
     return page.save().then(function (page) {
       return page.setAuthor(user);
@@ -31,6 +32,16 @@ router.post('/', function(req, res, next) {
     res.redirect(page.url);
   })
   .catch(next);
+});
+
+router.get('/search', function(req, res, next) {
+  Page.findByTag(req.query.search)
+    .then(function(pages) {
+      res.render('index', {
+        pages: pages
+      });
+    })
+    .catch(next);
 });
 
 router.get('/add', function(req, res) {

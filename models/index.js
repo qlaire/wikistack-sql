@@ -16,10 +16,34 @@ var Page = db.define('page', {
   urlTitle: { type: Sequelize.STRING, allowNull: false, isUrl: true },
   content: { type: Sequelize.TEXT, allowNull: false },
   date: { type: Sequelize.DATE, isDate: true, defaultValue: Sequelize.NOW },
-  status: Sequelize.ENUM('open', 'closed')
+  status: Sequelize.ENUM('open', 'closed'),
+  tags: {
+    type: Sequelize.ARRAY(Sequelize.STRING),
+    defaultValue: [],
+    set: function(tags) {
+      tags = tags || [];
+      if (typeof tags == 'string') {
+        tags = tags.split(',').map(function(str) {
+          return str.trim();
+        });
+      }
+      this.setDataValue('tags', tags);
+    }
+  }
 }, {
   getterMethods: {
     url: function() {return '/wiki/' + this.urlTitle;}
+  },
+  classMethods: {
+    findByTag: function(tag) {
+      return this.findAll({
+        where: {
+          tags: {
+            $contains: [tag]
+          }
+        }
+      });
+    }
   },
   hooks: {
     beforeValidate: function(page) {
